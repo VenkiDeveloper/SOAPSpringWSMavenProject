@@ -1,0 +1,24 @@
+package com.soap.services;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name="ConversionRateResponse",namespace="http://www.webserviceX.NET/")
+public class ConversionRateResponse {
+
+    @XmlElement(name="ConversionRateResult")
+   
+    protected double conversionRateResult;
+
+    public double getConversionRateResult() {
+        return conversionRateResult;
+    }
+
+    public void setConversionRateResult(double value) {
+        this.conversionRateResult = value;
+    }
+}

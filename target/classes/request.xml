@@ -1,0 +1,11 @@
+
+<!-- <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+	xmlns:web="http://www.webserviceX.NET/"> <soapenv:Header /> <soapenv:Body> 
+	<web:ConversionRate> <web:FromCurrency>USD</web:FromCurrency> <web:ToCurrency>INR</web:ToCurrency> 
+	</web:ConversionRate> </soapenv:Body> </soapenv:Envelope> -->
+
+
+<web:ConversionRate xmlns:web="http://www.webserviceX.NET/">
+	<web:FromCurrency>USD</web:FromCurrency>
+	<web:ToCurrency>INR</web:ToCurrency>
+</web:ConversionRate> 
