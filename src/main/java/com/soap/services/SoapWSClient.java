@@ -8,44 +8,38 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.util.Properties;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.namespace.QName;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPConstants;
+import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.Result;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.springframework.integration.ws.SimpleWebServiceOutboundGateway;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.core.SourceExtractor;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
 import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.soap.SoapEnvelope;
+import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.SoapMessage;
+import org.springframework.ws.soap.saaj.SaajSoapMessage;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.xml.transform.StringResult;
-import org.springframework.xml.transform.TransformerObjectSupport;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 public class SoapWSClient {
 
@@ -182,8 +176,7 @@ public class SoapWSClient {
 
 	}
 
-	public void responseExtractor1(String uri, String xmlFile)
-			throws Exception {
+	public void responseExtractor1(String uri, String xmlFile) throws Exception {
 
 		webServiceTemplate.setDefaultUri(uri);
 		try {
@@ -198,6 +191,59 @@ public class SoapWSClient {
 				xmlFile)));
 		DOMSource domSource = webServiceTemplate.sendSourceAndReceive(source,
 				new SourceExtractor<DOMSource>() {
+
+					public DOMSource extractData(Source source)
+							throws IOException, TransformerException {
+						if (source instanceof DOMSource) {
+							return (DOMSource) source;
+						}
+						DOMResult result = new DOMResult();
+						TransformerFactory.newInstance().newTransformer()
+								.transform(source, result);
+						return new DOMSource(result.getNode());
+					}
+
+				});
+		String path = "C:\\Venky\\ATMECS Projects\\SOAPSpringWSProject\\src\\main\\resources\\resposne.xml";
+		writeToFile(domSource, path);
+
+	}
+
+	/*
+	 * <SOAP-ENV:Header> <wsa:MessageID>urn:abcdef1234</wsa:MessageID>
+	 * </SOAP-ENV:Header>
+	 */
+
+	public void addRequestHeader(String uri, String xmlFile) throws Exception {
+
+		webServiceTemplate.setDefaultUri(uri);
+		try {
+			webServiceTemplate
+					.setMessageFactory(new SaajSoapMessageFactory(
+							MessageFactory
+									.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL)));
+		} catch (SOAPException e) {
+			e.printStackTrace();
+		}
+		StreamSource source = new StreamSource(new FileInputStream(new File(
+				xmlFile)));
+		DOMSource domSource = webServiceTemplate.sendSourceAndReceive(source,
+				new WebServiceMessageCallback() {
+
+					public void doWithMessage(WebServiceMessage message)
+							throws IOException, TransformerException {
+
+						SaajSoapMessage soapMessage = (SaajSoapMessage) message;
+						SoapHeaderElement messageId = soapMessage
+								.getSoapHeader()
+								.addHeaderElement(
+										new QName(
+												"http://www.w3.org/2005/08/addressing",
+												"MessageID", "wsa"));
+						messageId.setText("urn:abcdef1234");
+
+					}
+				}, new SourceExtractor<DOMSource>() {
 
 					public DOMSource extractData(Source source)
 							throws IOException, TransformerException {
